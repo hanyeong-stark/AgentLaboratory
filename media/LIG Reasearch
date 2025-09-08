@@ -1,0 +1,50 @@
+import openai
+import time
+from datetime import datetime
+
+# 🔹 OpenAI API 키 입력
+openai.api_key = "YOUR_API_KEY_HERE"
+
+# 🔹 연구 주제 (예: LIG on PDMS implantation)
+topic = "Implantation Laser-Induced Graphene (LIG) between PDMS layers"
+
+# 🔹 에이전트가 생각하는 함수
+def think_about_topic(topic):
+    prompt = f"""
+    You are a research agent that continuously thinks about the following experiment topic:
+
+    Topic: {topic}
+
+    Task:
+    - Generate one new thought, hypothesis, or question about this topic.
+    - Be creative but scientifically grounded.
+    - Keep the output short (3–5 sentences).
+    """
+
+    response = openai.ChatCompletion.create(
+        model="gpt-5",   # 또는 gpt-4o 등
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.8
+    )
+    return response["choices"][0]["message"]["content"].strip()
+
+# 🔹 메인 루프 (예: 1시간마다 아이디어 생성)
+def run_agent(interval=3600):
+    while True:
+        thought = think_about_topic(topic)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        log_entry = f"[{now}] {thought}\n"
+
+        # 로그 파일 저장
+        with open("lab_thoughts_log.txt", "a", encoding="utf-8") as f:
+            f.write(log_entry)
+
+        print(log_entry)
+
+        # 대기 (interval 초)
+        time.sleep(interval)
+
+# 실행
+if __name__ == "__main__":
+    run_agent(interval=3600)  # 1시간마다 실행 (3600초)
